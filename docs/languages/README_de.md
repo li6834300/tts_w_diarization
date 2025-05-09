@@ -120,6 +120,26 @@ python3 -c "import app_diarize; app_diarize.app.run(debug=True, host='0.0.0.0', 
 
 Die Anwendung ist unter http://localhost:5001 (oder dem von Ihnen konfigurierten Port) verfügbar.
 
+### Kommandozeilen-Nutzung (ohne Weboberfläche)
+
+Sie können das Skript auch direkt von der Kommandozeile aus verwenden, ohne die Webanwendung zu starten:
+
+```bash
+# Grundlegende Verwendung
+python3 whisper_diarize.py --audio /pfad/zu/ihrer/audiodatei.mp3 --model base
+
+# Beispiel mit weiteren Optionen
+python3 whisper_diarize.py --audio /pfad/zu/ihrer/audiodatei.mp3 --model large --num_speakers 2
+```
+
+Häufige Kommandozeilen-Optionen:
+- `--audio`: Pfad zur Audiodatei (erforderlich)
+- `--model`: Whisper-Modellgröße (tiny, base, small, medium, large) - Standard ist base
+- `--num_speakers`: Anzahl der Sprecher in der Audiodatei (Standard ist 2)
+- `--output_dir`: Verzeichnis zum Speichern der Transkriptionsergebnisse (Standard ist "transcriptions")
+
+Diese direkte Kommandozeilen-Nutzung ist nützlich für die Stapelverarbeitung oder wenn Sie keine Weboberfläche benötigen.
+
 ## Verwendung
 
 1. Öffnen Sie die Anwendung in Ihrem Webbrowser

@@ -120,6 +120,26 @@ python3 -c "import app_diarize; app_diarize.app.run(debug=True, host='0.0.0.0', 
 
 应用程序将在http://localhost:5001（或您配置的端口）上可用。
 
+### 命令行使用（无需Web界面）
+
+您也可以直接从命令行使用脚本，而无需启动Web应用程序：
+
+```bash
+# 基本用法
+python3 whisper_diarize.py --audio /您的音频文件路径/文件.mp3 --model base
+
+# 更多选项的示例
+python3 whisper_diarize.py --audio /您的音频文件路径/文件.mp3 --model large --num_speakers 2
+```
+
+常用命令行选项：
+- `--audio`：音频文件的路径（必需）
+- `--model`：Whisper模型大小（tiny, base, small, medium, large）- 默认为base
+- `--num_speakers`：音频中的说话者数量（默认为2）
+- `--output_dir`：保存转录输出的目录（默认为"transcriptions"）
+
+这种直接的命令行使用对于批处理或当您不需要Web界面时非常有用。
+
 ## 使用方法
 
 1. 在网络浏览器中打开应用程序

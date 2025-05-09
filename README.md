@@ -127,6 +127,26 @@ python3 -c "import app_diarize; app_diarize.app.run(debug=True, host='0.0.0.0', 
 
 The application will be available at http://localhost:5001 (or the port you configured).
 
+### Command-line Usage (without web interface)
+
+You can also use the script directly from the command line without starting the web application:
+
+```bash
+# Basic usage
+python3 whisper_diarize.py --audio /path/to/your/audio/file.mp3 --model base
+
+# Example with more options
+python3 whisper_diarize.py --audio /path/to/your/audio/file.mp3 --model large --num_speakers 2
+```
+
+Common command-line options:
+- `--audio`: Path to the audio file (required)
+- `--model`: Whisper model size (tiny, base, small, medium, large) - default is base
+- `--num_speakers`: Number of speakers in the audio (default is 2)
+- `--output_dir`: Directory to save transcription outputs (default is "transcriptions")
+
+This direct command-line usage is useful for batch processing or when you don't need the web interface.
+
 ## Usage
 
 1. Open the application in your web browser
