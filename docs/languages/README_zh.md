@@ -96,8 +96,26 @@ sudo apt install ffmpeg
 
 ### 步骤5：启动应用程序
 
+您可以使用以下方式运行应用程序：
+
 ```bash
+# 使用python
 python app_diarize.py
+
+# 或明确使用python3（在macOS/Linux上推荐）
+python3 app_diarize.py
+```
+
+如果您需要使用不同的端口（例如，如果端口5001已被占用）：
+
+```bash
+# 编辑app_diarize.py并更改端口号
+# 在文件底部找到这一行：
+# app.run(debug=True, host="0.0.0.0", port=5001)
+# 将5001更改为您想要的端口，例如5002
+
+# 或者您可以在运行时直接指定端口：
+python3 -c "import app_diarize; app_diarize.app.run(debug=True, host='0.0.0.0', port=5002)"
 ```
 
 应用程序将在http://localhost:5001（或您配置的端口）上可用。

@@ -96,8 +96,26 @@ sudo apt install ffmpeg
 
 ### Schritt 5: Anwendung starten
 
+Sie können die Anwendung wie folgt ausführen:
+
 ```bash
+# Mit python
 python app_diarize.py
+
+# ODER explizit mit python3 (empfohlen unter macOS/Linux)
+python3 app_diarize.py
+```
+
+Wenn Sie einen anderen Port verwenden müssen (zum Beispiel, wenn Port 5001 bereits verwendet wird):
+
+```bash
+# Bearbeiten Sie app_diarize.py und ändern Sie die Portnummer
+# Suchen Sie diese Zeile am Ende der Datei:
+# app.run(debug=True, host="0.0.0.0", port=5001)
+# Ändern Sie 5001 zu Ihrem gewünschten Port, zum Beispiel 5002
+
+# ODER Sie können den Port direkt beim Ausführen angeben:
+python3 -c "import app_diarize; app_diarize.app.run(debug=True, host='0.0.0.0', port=5002)"
 ```
 
 Die Anwendung ist unter http://localhost:5001 (oder dem von Ihnen konfigurierten Port) verfügbar.
