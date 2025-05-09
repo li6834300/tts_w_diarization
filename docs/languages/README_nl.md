@@ -1,6 +1,6 @@
 # Audio Transcriptie Tool met Sprekerherkenning
 
-[English](../README.md) | [中文](README_zh.md) | [Nederlands](README_nl.md)
+[English](../../README.md) | [中文](README_zh.md) | [Nederlands](README_nl.md)
 
 Een webapplicatie die automatisch audiobestanden transcribeert en verschillende sprekers in gesprekken identificeert met behulp van OpenAI's Whisper-model en sprekerherkenningstechnologieën.
 
