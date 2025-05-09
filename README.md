@@ -2,7 +2,12 @@
 
 A web application that transcribes audio files and identifies different speakers in the conversation using OpenAI's Whisper model and speaker diarization technologies.
 
-> **Available in multiple languages**: This README is available in [multiple languages](README_TRANSLATIONS.md).
+## Languages
+- English (This Document)
+- [Spanish / Español](docs/languages/README_es.md)
+- [Chinese / 中文](docs/languages/README_zh.md)
+- [French / Français](docs/languages/README_fr.md)
+- [German / Deutsch](docs/languages/README_de.md)
 
 ## Features
 
@@ -32,8 +37,8 @@ Before you begin, ensure you have the following installed:
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/whisper_trans.git
-cd whisper_trans
+git clone https://github.com/li6834300/tts_w_diarization.git
+cd tts_w_diarization
 ```
 
 Or download and extract the ZIP file from the repository.
