@@ -1,6 +1,6 @@
 # Audio Transcription Tool with Speaker Diarization
 
-[English](README.md) | [中文](README_zh.md) | [Nederlands](README_nl.md)
+[English](README.md) | [中文](docs/languages/README_zh.md) | [Nederlands](docs/languages/README_nl.md) | [Español](docs/languages/README_es.md) | [Français](docs/languages/README_fr.md) | [Deutsch](docs/languages/README_de.md) | [日本語](docs/languages/README_ja.md) | [한국어](docs/languages/README_ko.md) | [Русский](docs/languages/README_ru.md) | [العربية](docs/languages/README_ar.md) | [हिन्दी](docs/languages/README_hi.md) | [Português](docs/languages/README_pt.md) | [Italiano](docs/languages/README_it.md) | [Türkçe](docs/languages/README_tr.md) | [Tiếng Việt](docs/languages/README_vi.md) | [ไทย](docs/languages/README_th.md) | [Polski](docs/languages/README_pl.md) | [Svenska](docs/languages/README_sv.md)
 
 A web application that automatically transcribes audio files and identifies different speakers in conversations using OpenAI's Whisper model and speaker diarization technologies.
 

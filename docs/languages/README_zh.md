@@ -1,6 +1,6 @@
-# 音频转录工具（带说话人识别）
+# 带说话人识别的音频转录工具
 
-[English](README.md) | [中文](README_zh.md) | [Nederlands](README_nl.md)
+[English](../README.md) | [中文](README_zh.md) | [Nederlands](README_nl.md) | [Español](README_es.md) | [Français](README_fr.md) | [Deutsch](README_de.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Русский](README_ru.md) | [العربية](README_ar.md) | [हिन्दी](README_hi.md) | [Português](README_pt.md) | [Italiano](README_it.md) | [Türkçe](README_tr.md) | [Tiếng Việt](README_vi.md) | [ไทย](README_th.md) | [Polski](README_pl.md) | [Svenska](README_sv.md)
 
 一个使用 OpenAI 的 Whisper 模型和说话人识别技术自动转录音频文件并识别不同说话人的网络应用程序。
 
