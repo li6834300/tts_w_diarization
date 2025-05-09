@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Audio Transcription with Speaker Diarization</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f7f9fc;
+            position: relative;
+        }
+        h1 {
+            color: #2a5298;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .upload-container {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .drop-area {
+            border: 3px dashed #ccd5e1;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background-color: #f7f9fc;
+        }
+        .drop-area.highlight {
+            border-color: #2a5298;
+            background-color: #e6effd;
+        }
+        .drop-area p {
+            font-size: 18px;
+            color: #5d7290;
+            margin-bottom: 15px;
+        }
+        .file-info {
+            margin-top: 20px;
+            display: none;
+        }
+        .file-info .name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .options {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #3d4a5d;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd5e1;
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: #f7f9fc;
+        }
+        .btn {
+            background-color: #2a5298;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #1e3c73;
+        }
+        .btn:disabled {
+            background-color: #a5b3cc;
+            cursor: not-allowed;
+        }
+        .result-container {
+            display: none;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #e6effd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #2a5298;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .progress-text {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 14px;
+            color: #5d7290;
+        }
+        .error-message {
+            color: #d93025;
+            margin-top: 10px;
+            display: none;
+            padding: 12px;
+            background-color: #fee;
+            border-radius: 6px;
+        }
+        #transcription {
+            white-space: pre-wrap;
+            background-color: #f7f9fc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2a5298;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .download-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .download-links a {
+            background-color: #e6effd;
+            color: #2a5298;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .download-links a:hover {
+            background-color: #d1e3fc;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2a5298;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #e1e4e8;
+            font-size: 14px;
+            color: #586069;
+        }
+        .footer a {
+            color: #2a5298;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        .language-selector select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccd5e1;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .language-selector select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <select id="language-select" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="zh">中文</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="ru">Русский</option>
+            <option value="ar">العربية</option>
+            <option value="hi">हिन्दी</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+            <option value="nl">Nederlands</option>
+            <option value="tr">Türkçe</option>
+            <option value="vi">Tiếng Việt</option>
+            <option value="th">ไทย</option>
+            <option value="pl">Polski</option>
+            <option value="sv">Svenska</option>
+        </select>
+    </div>
+
+    <h1>Text to Audio Transcription with Speaker Diarization</h1>
+    
+    <div class="container">
+        <div class="upload-container">
+            <div class="drop-area" id="drop-area">
+                <p>Drag & drop your audio file here</p>
+                <p>or</p>
+                <input type="file" id="file-input" accept=".mp3,.wav,.ogg,.flac,.m4a" style="display: none;">
+                <button class="btn" id="browse-btn">Browse Files</button>
+                
+                <div class="file-info" id="file-info">
+                    <div class="name" id="file-name"></div>
+                    <div id="file-size"></div>
+                </div>
+            </div>
+            
+            <div class="options">
+                <div class="form-group">
+                    <label for="model">Select Whisper model:</label>
+                    <select id="model">
+                        <option value="tiny">Tiny (fast, less accurate)</option>
+                        <option value="base" selected>Base (balanced)</option>
+                        <option value="small">Small (more accurate)</option>
+                        <option value="medium">Medium (more accurate, slower)</option>
+                        <option value="large-v2">Large-v2 (most accurate, slowest)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="num-speakers">Number of speakers:</label>
+                    <input type="number" id="num-speakers" min="1" max="10" value="2">
+                    <div id="help-text">Specify how many different speakers are in the audio</div>
+                </div>
+                
+                <button class="btn" id="transcribe-btn" disabled>Transcribe</button>
+                
+                <div class="error-message" id="error-message"></div>
+                
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">Initializing...</div>
+                </div>
+                <div class="loading-spinner" id="spinner"></div>
+            </div>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <h2>Transcription Result</h2>
+            <div id="transcription"></div>
+            
+            <div class="download-links" id="download-links">
+                <h3>Download Formats</h3>
+                <!-- Links will be added here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>Crafted by Zhien Li</p>
+        <p>
+            <a href="http://lizhien.me/" target="_blank">Website</a> | 
+            <a href="https://github.com/li6834300" target="_blank">GitHub</a> | 
+            <a href="https://www.linkedin.com/in/zhienli277/" target="_blank">LinkedIn</a>
+        </p>
+    </footer>
+    
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                title: "Text to Audio Transcription with Speaker Diarization",
+                dragDrop: "Drag & drop your audio file here",
+                or: "or",
+                browse: "Browse Files",
+                modelLabel: "Select Whisper model:",
+                tiny: "Tiny (fast, less accurate)",
+                base: "Base (balanced)",
+                small: "Small (more accurate)",
+                medium: "Medium (more accurate, slower)",
+                large: "Large-v2 (most accurate, slowest)",
+                speakersLabel: "Number of speakers:",
+                speakersHelp: "Specify how many different speakers are in the audio",
+                transcribe: "Transcribe",
+                init: "Initializing...",
+                resultTitle: "Transcription Result",
+                downloadFormats: "Download Formats"
+            },
+            es: {
+                title: "Transcripción de Audio a Texto con Diarización de Hablantes",
+                dragDrop: "Arrastra y suelta tu archivo de audio aquí",
+                or: "o",
+                browse: "Explorar Archivos",
+                modelLabel: "Selecciona el modelo Whisper:",
+                tiny: "Pequeño (rápido, menos preciso)",
+                base: "Base (equilibrado)",
+                small: "Mediano (más preciso)",
+                medium: "Medio (más preciso, más lento)",
+                large: "Grande-v2 (más preciso, más lento)",
+                speakersLabel: "Número de hablantes:",
+                speakersHelp: "Especifica cuántos hablantes diferentes hay en el audio",
+                transcribe: "Transcribir",
+                init: "Inicializando...",
+                resultTitle: "Resultado de la Transcripción",
+                downloadFormats: "Formatos de Descarga"
+            },
+            fr: {
+                title: "Transcription Audio avec Diarisation de Locuteurs",
+                dragDrop: "Glissez et déposez votre fichier audio ici",
+                or: "ou",
+                browse: "Parcourir les Fichiers",
+                modelLabel: "Sélectionnez le modèle Whisper :",
+                tiny: "Minuscule (rapide, moins précis)",
+                base: "Base (équilibré)",
+                small: "Petit (plus précis)",
+                medium: "Moyen (plus précis, plus lent)",
+                large: "Large-v2 (plus précis, plus lent)",
+                speakersLabel: "Nombre de locuteurs :",
+                speakersHelp: "Spécifiez combien de locuteurs différents sont dans l'audio",
+                transcribe: "Transcrire",
+                init: "Initialisation...",
+                resultTitle: "Résultat de la Transcription",
+                downloadFormats: "Formats de Téléchargement"
+            },
+            de: {
+                title: "Audio-zu-Text-Transkription mit Sprechererkennung",
+                dragDrop: "Audiodatei hier ablegen",
+                or: "oder",
+                browse: "Dateien durchsuchen",
+                modelLabel: "Whisper-Modell auswählen:",
+                tiny: "Winzig (schnell, weniger genau)",
+                base: "Basis (ausgewogen)",
+                small: "Klein (genauer)",
+                medium: "Mittel (genauer, langsamer)",
+                large: "Groß-v2 (am genauesten, am langsamsten)",
+                speakersLabel: "Anzahl der Sprecher:",
+                speakersHelp: "Geben Sie an, wie viele verschiedene Sprecher in der Audiodatei vorkommen",
+                transcribe: "Transkribieren",
+                init: "Initialisierung...",
+                resultTitle: "Transkriptionsergebnis",
+                downloadFormats: "Download-Formate"
+            },
+            zh: {
+                title: "音频转文本与说话人分离",
+                dragDrop: "拖放音频文件到这里",
+                or: "或",
+                browse: "浏览文件",
+                modelLabel: "选择Whisper模型:",
+                tiny: "极小型 (快速，精度较低)",
+                base: "基础型 (平衡)",
+                small: "小型 (更精确)",
+                medium: "中型 (更精确，较慢)",
+                large: "大型-v2 (最精确，最慢)",
+                speakersLabel: "说话人数量:",
+                speakersHelp: "指定音频中有多少不同的说话人",
+                transcribe: "转录",
+                init: "初始化中...",
+                resultTitle: "转录结果",
+                downloadFormats: "下载格式"
+            },
+            ja: {
+                title: "音声テキスト変換と話者識別",
+                dragDrop: "音声ファイルをここにドラッグ＆ドロップ",
+                or: "または",
+                browse: "ファイルを参照",
+                modelLabel: "Whisperモデルを選択:",
+                tiny: "超小型 (高速、精度低め)",
+                base: "標準 (バランス型)",
+                small: "小型 (より正確)",
+                medium: "中型 (より正確、低速)",
+                large: "大型-v2 (最も正確、最も低速)",
+                speakersLabel: "話者数:",
+                speakersHelp: "音声内の異なる話者の数を指定",
+                transcribe: "文字起こし",
+                init: "初期化中...",
+                resultTitle: "文字起こし結果",
+                downloadFormats: "ダウンロード形式"
+            },
+            ko: {
+                title: "오디오 텍스트 변환 및 화자 분리",
+                dragDrop: "오디오 파일을 여기에 끌어다 놓으세요",
+                or: "또는",
+                browse: "파일 찾기",
+                modelLabel: "Whisper 모델 선택:",
+                tiny: "매우 작음 (빠름, 정확도 낮음)",
+                base: "기본 (균형)",
+                small: "작음 (더 정확함)",
+                medium: "중간 (더 정확함, 느림)",
+                large: "대형-v2 (가장 정확함, 가장 느림)",
+                speakersLabel: "화자 수:",
+                speakersHelp: "오디오에 포함된 서로 다른 화자의 수를 지정하세요",
+                transcribe: "변환",
+                init: "초기화 중...",
+                resultTitle: "변환 결과",
+                downloadFormats: "다운로드 형식"
+            },
+            ru: {
+                title: "Преобразование аудио в текст с распознаванием говорящих",
+                dragDrop: "Перетащите аудиофайл сюда",
+                or: "или",
+                browse: "Обзор файлов",
+                modelLabel: "Выберите модель Whisper:",
+                tiny: "Крошечная (быстрая, менее точная)",
+                base: "Базовая (сбалансированная)",
+                small: "Малая (более точная)",
+                medium: "Средняя (более точная, медленнее)",
+                large: "Большая-v2 (самая точная, самая медленная)",
+                speakersLabel: "Количество говорящих:",
+                speakersHelp: "Укажите, сколько разных говорящих в аудио",
+                transcribe: "Транскрибировать",
+                init: "Инициализация...",
+                resultTitle: "Результат транскрипции",
+                downloadFormats: "Форматы для скачивания"
+            },
+            ar: {
+                title: "تحويل الصوت إلى نص مع تمييز المتحدثين",
+                dragDrop: "اسحب وأفلت ملف الصوت هنا",
+                or: "أو",
+                browse: "تصفح الملفات",
+                modelLabel: "اختر نموذج Whisper:",
+                tiny: "صغير جدًا (سريع، أقل دقة)",
+                base: "أساسي (متوازن)",
+                small: "صغير (أكثر دقة)",
+                medium: "متوسط (أكثر دقة، أبطأ)",
+                large: "كبير-v2 (الأكثر دقة، الأبطأ)",
+                speakersLabel: "عدد المتحدثين:",
+                speakersHelp: "حدد عدد المتحدثين المختلفين في الصوت",
+                transcribe: "تحويل",
+                init: "جاري التهيئة...",
+                resultTitle: "نتيجة التحويل",
+                downloadFormats: "صيغ التنزيل"
+            },
+            hi: {
+                title: "ऑडियो से टेक्स्ट ट्रांसक्रिप्शन और वक्ता पहचान",
+                dragDrop: "अपनी ऑडियो फ़ाइल यहां खींचें और छोड़ें",
+                or: "या",
+                browse: "फ़ाइलें ब्राउज़ करें",
+                modelLabel: "Whisper मॉडल चुनें:",
+                tiny: "बहुत छोटा (तेज़, कम सटीक)",
+                base: "बेसिक (संतुलित)",
+                small: "छोटा (अधिक सटीक)",
+                medium: "मध्यम (अधिक सटीक, धीमा)",
+                large: "बड़ा-v2 (सबसे सटीक, सबसे धीमा)",
+                speakersLabel: "वक्ताओं की संख्या:",
+                speakersHelp: "ऑडियो में कितने अलग-अलग वक्ता हैं यह निर्दिष्ट करें",
+                transcribe: "ट्रांसक्राइब",
+                init: "प्रारंभ हो रहा है...",
+                resultTitle: "ट्रांसक्रिप्शन परिणाम",
+                downloadFormats: "डाउनलोड प्रारूप"
+            },
+            pt: {
+                title: "Transcrição de Áudio para Texto com Diarização de Falantes",
+                dragDrop: "Arraste e solte seu arquivo de áudio aqui",
+                or: "ou",
+                browse: "Procurar Arquivos",
+                modelLabel: "Selecione o modelo Whisper:",
+                tiny: "Pequeno (rápido, menos preciso)",
+                base: "Base (equilibrado)",
+                small: "Médio (mais preciso)",
+                medium: "Médio (mais preciso, mais lento)",
+                large: "Grande-v2 (mais preciso, mais lento)",
+                speakersLabel: "Número de falantes:",
+                speakersHelp: "Especifique quantos falantes diferentes existem no áudio",
+                transcribe: "Transcrever",
+                init: "Inicializando...",
+                resultTitle: "Resultado da Transcrição",
+                downloadFormats: "Formatos para Download"
+            },
+            it: {
+                title: "Trascrizione Audio con Diarizzazione dei Parlanti",
+                dragDrop: "Trascina e rilascia il tuo file audio qui",
+                or: "oppure",
+                browse: "Sfoglia File",
+                modelLabel: "Seleziona il modello Whisper:",
+                tiny: "Minuscolo (veloce, meno accurato)",
+                base: "Base (bilanciato)",
+                small: "Piccolo (più accurato)",
+                medium: "Medio (più accurato, più lento)",
+                large: "Grande-v2 (più accurato, più lento)",
+                speakersLabel: "Numero di parlanti:",
+                speakersHelp: "Specifica quanti parlanti diversi ci sono nell'audio",
+                transcribe: "Trascrivi",
+                init: "Inizializzazione...",
+                resultTitle: "Risultato della Trascrizione",
+                downloadFormats: "Formati di Download"
+            },
+            nl: {
+                title: "Audio-naar-tekst Transcriptie met Spreker Diarisatie",
+                dragDrop: "Sleep uw audiobestand hier naartoe",
+                or: "of",
+                browse: "Blader door Bestanden",
+                modelLabel: "Selecteer Whisper-model:",
+                tiny: "Klein (snel, minder nauwkeurig)",
+                base: "Basis (gebalanceerd)",
+                small: "Klein (nauwkeuriger)",
+                medium: "Medium (nauwkeuriger, langzamer)",
+                large: "Groot-v2 (meest nauwkeurig, traagst)",
+                speakersLabel: "Aantal sprekers:",
+                speakersHelp: "Specificeer hoeveel verschillende sprekers er in de audio zijn",
+                transcribe: "Transcriberen",
+                init: "Initialiseren...",
+                resultTitle: "Transcriptie Resultaat",
+                downloadFormats: "Download Formaten"
+            },
+            tr: {
+                title: "Konuşmacı Ayrıştırmalı Ses-Metin Dönüşümü",
+                dragDrop: "Ses dosyanızı buraya sürükleyip bırakın",
+                or: "veya",
+                browse: "Dosyalara Göz At",
+                modelLabel: "Whisper modelini seçin:",
+                tiny: "Minik (hızlı, daha az doğru)",
+                base: "Temel (dengeli)",
+                small: "Küçük (daha doğru)",
+                medium: "Orta (daha doğru, daha yavaş)",
+                large: "Büyük-v2 (en doğru, en yavaş)",
+                speakersLabel: "Konuşmacı sayısı:",
+                speakersHelp: "Ses kaydındaki farklı konuşmacı sayısını belirtin",
+                transcribe: "Dönüştür",
+                init: "Başlatılıyor...",
+                resultTitle: "Dönüşüm Sonucu",
+                downloadFormats: "İndirme Formatları"
+            },
+            vi: {
+                title: "Chuyển Đổi Âm Thanh Thành Văn Bản với Nhận Diện Người Nói",
+                dragDrop: "Kéo và thả tệp âm thanh của bạn vào đây",
+                or: "hoặc",
+                browse: "Duyệt Tệp",
+                modelLabel: "Chọn mô hình Whisper:",
+                tiny: "Nhỏ (nhanh, ít chính xác)",
+                base: "Cơ bản (cân bằng)",
+                small: "Nhỏ (chính xác hơn)",
+                medium: "Trung bình (chính xác hơn, chậm hơn)",
+                large: "Lớn-v2 (chính xác nhất, chậm nhất)",
+                speakersLabel: "Số lượng người nói:",
+                speakersHelp: "Chỉ định có bao nhiêu người nói khác nhau trong âm thanh",
+                transcribe: "Chuyển đổi",
+                init: "Đang khởi tạo...",
+                resultTitle: "Kết Quả Chuyển Đổi",
+                downloadFormats: "Định Dạng Tải Xuống"
+            },
+            th: {
+                title: "การแปลงเสียงเป็นข้อความพร้อมแยกผู้พูด",
+                dragDrop: "ลากและวางไฟล์เสียงของคุณที่นี่",
+                or: "หรือ",
+                browse: "เรียกดูไฟล์",
+                modelLabel: "เลือกโมเดล Whisper:",
+                tiny: "เล็กมาก (เร็ว, แม่นยำน้อย)",
+                base: "พื้นฐาน (สมดุล)",
+                small: "เล็ก (แม่นยำมากขึ้น)",
+                medium: "กลาง (แม่นยำมากขึ้น, ช้าลง)",
+                large: "ใหญ่-v2 (แม่นยำที่สุด, ช้าที่สุด)",
+                speakersLabel: "จำนวนผู้พูด:",
+                speakersHelp: "ระบุจำนวนผู้พูดที่แตกต่างกันในเสียง",
+                transcribe: "ถอดความ",
+                init: "กำลังเริ่มต้น...",
+                resultTitle: "ผลการถอดความ",
+                downloadFormats: "รูปแบบการดาวน์โหลด"
+            },
+            pl: {
+                title: "Transkrypcja Audio z Diaryzacją Mówców",
+                dragDrop: "Przeciągnij i upuść plik audio tutaj",
+                or: "lub",
+                browse: "Przeglądaj Pliki",
+                modelLabel: "Wybierz model Whisper:",
+                tiny: "Mały (szybki, mniej dokładny)",
+                base: "Podstawowy (zrównoważony)",
+                small: "Mały (dokładniejszy)",
+                medium: "Średni (dokładniejszy, wolniejszy)",
+                large: "Duży-v2 (najdokładniejszy, najwolniejszy)",
+                speakersLabel: "Liczba mówców:",
+                speakersHelp: "Określ, ilu różnych mówców jest w nagraniu",
+                transcribe: "Transkrybuj",
+                init: "Inicjalizacja...",
+                resultTitle: "Wynik Transkrypcji",
+                downloadFormats: "Formaty do Pobrania"
+            },
+            sv: {
+                title: "Ljud-till-text Transkription med Talaridentifiering",
+                dragDrop: "Dra och släpp din ljudfil här",
+                or: "eller",
+                browse: "Bläddra bland Filer",
+                modelLabel: "Välj Whisper-modell:",
+                tiny: "Mycket liten (snabb, mindre noggrann)",
+                base: "Bas (balanserad)",
+                small: "Liten (mer noggrann)",
+                medium: "Medium (mer noggrann, långsammare)",
+                large: "Stor-v2 (mest noggrann, långsammast)",
+                speakersLabel: "Antal talare:",
+                speakersHelp: "Ange hur många olika talare som finns i ljudet",
+                transcribe: "Transkribera",
+                init: "Initierar...",
+                resultTitle: "Transkriptionsresultat",
+                downloadFormats: "Nedladdningsformat"
+            }
+        };
+
+        // Change language function
+        function changeLanguage(lang) {
+            if (!translations[lang]) return;
+            
+            const t = translations[lang];
+            
+            // Update page elements
+            document.title = t.title;
+            document.querySelector('h1').textContent = t.title;
+            
+            // Update drop area text
+            const dropAreaPs = document.querySelectorAll('#drop-area p');
+            dropAreaPs[0].textContent = t.dragDrop;
+            dropAreaPs[1].textContent = t.or;
+            
+            // Update buttons and labels
+            document.getElementById('browse-btn').textContent = t.browse;
+            document.querySelector('label[for="model"]').textContent = t.modelLabel;
+            
+            // Update model options
+            const modelOptions = document.querySelectorAll('#model option');
+            modelOptions[0].textContent = t.tiny;
+            modelOptions[1].textContent = t.base;
+            modelOptions[2].textContent = t.small;
+            modelOptions[3].textContent = t.medium;
+            modelOptions[4].textContent = t.large;
+            
+            // Update speakers label and help text
+            document.querySelector('label[for="num-speakers"]').textContent = t.speakersLabel;
+            document.getElementById('help-text').textContent = t.speakersHelp;
+            
+            // Update transcribe button
+            document.getElementById('transcribe-btn').textContent = t.transcribe;
+            
+            // Update progress text
+            document.getElementById('progress-text').textContent = t.init;
+            
+            // Update result container if visible
+            const resultContainer = document.getElementById('result-container');
+            if (resultContainer.style.display !== 'none') {
+                resultContainer.querySelector('h2').textContent = t.resultTitle;
+                const downloadLinksHeader = document.querySelector('#download-links h3');
+                if (downloadLinksHeader) {
+                    downloadLinksHeader.textContent = t.downloadFormats;
+                }
+            }
+        }
+
+        // Get DOM elements
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const browseBtn = document.getElementById('browse-btn');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const transcribeBtn = document.getElementById('transcribe-btn');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const spinner = document.getElementById('spinner');
+        const errorMessage = document.getElementById('error-message');
+        const resultContainer = document.getElementById('result-container');
+        const transcription = document.getElementById('transcription');
+        const downloadLinks = document.getElementById('download-links');
+        const modelSelect = document.getElementById('model');
+        const numSpeakers = document.getElementById('num-speakers');
+        
+        // Current job ID
+        let currentJobId = null;
+        let pollingInterval = null;
+        
+        // Prevent default behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        }
+        
+        // Handle browse button
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleFiles(this.files);
+            }
+        });
+        
+        function handleFiles(files) {
+            const file = files[0];
+            
+            // Check file type
+            const fileType = file.name.split('.').pop().toLowerCase();
+            const allowedTypes = ['mp3', 'wav', 'ogg', 'flac', 'm4a'];
+            
+            if (!allowedTypes.includes(fileType)) {
+                showError(`File type not allowed. Please use: ${allowedTypes.join(', ')}`);
+                return;
+            }
+            
+            // Display file info
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            
+            // Enable transcribe button
+            transcribeBtn.disabled = false;
+            
+            // Clear any previous error
+            hideError();
+            
+            // Store file for later
+            transcribeBtn.file = file;
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            if (bytes === 0) return '0 Byte';
+            const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+            return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+        }
+        
+        // Handle transcribe button click
+        transcribeBtn.addEventListener('click', startTranscription);
+        
+        function startTranscription() {
+            const file = transcribeBtn.file;
+            if (!file) return;
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('model', modelSelect.value);
+            formData.append('num_speakers', numSpeakers.value);
+            
+            // Show progress and disable button
+            progressContainer.style.display = 'block';
+            spinner.style.display = 'block';
+            transcribeBtn.disabled = true;
+            
+            // Hide result container if it was previously shown
+            resultContainer.style.display = 'none';
+            
+            // Send request
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to upload file');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                currentJobId = data.job_id;
+                progressText.textContent = 'Processing...';
+                
+                // Start polling for status
+                startPolling(currentJobId);
+            })
+            .catch(error => {
+                showError(error.message);
+                resetUI();
+            });
+        }
+        
+        function startPolling(jobId) {
+            // Clear any existing interval
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            pollingInterval = setInterval(() => {
+                fetch(`/job/${jobId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to get job status');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateProgress(data);
+                    
+                    if (data.status === 'completed' || data.status === 'error') {
+                        clearInterval(pollingInterval);
+                        
+                        if (data.status === 'error') {
+                            showError(data.error_message || 'An error occurred during transcription');
+                        } else {
+                            displayResults(data);
+                        }
+                        
+                        spinner.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error polling job status:', error);
+                    clearInterval(pollingInterval);
+                    showError('Error checking job status');
+                    spinner.style.display = 'none';
+                });
+            }, 1000); // Poll every second
+        }
+        
+        function updateProgress(data) {
+            const progress = data.progress || 0;
+            progressFill.style.width = `${progress}%`;
+            
+            let statusText = 'Processing...';
+            switch (data.status) {
+                case 'uploaded':
+                    statusText = 'Preparing to transcribe...';
+                    break;
+                case 'transcribing':
+                    statusText = 'Transcribing audio...';
+                    break;
+                case 'completed':
+                    statusText = 'Transcription completed!';
+                    break;
+                case 'error':
+                    statusText = 'Error occurred';
+                    break;
+            }
+            
+            progressText.textContent = `${statusText} (${progress}%)`;
+        }
+        
+        function displayResults(data) {
+            // Display transcription
+            transcription.textContent = data.text;
+            
+            // Display download links
+            downloadLinks.innerHTML = '<h3>Download Formats</h3>';
+            
+            for (const [format, url] of Object.entries(data.download_links)) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.textContent = format.toUpperCase();
+                downloadLinks.appendChild(link);
+            }
+            
+            // Show result container
+            resultContainer.style.display = 'block';
+            
+            // Reset UI elements
+            resetUI(true);
+        }
+        
+        function resetUI(keepProgress = false) {
+            transcribeBtn.disabled = false;
+            
+            if (!keepProgress) {
+                progressContainer.style.display = 'none';
+                progressFill.style.width = '0%';
+                progressText.textContent = 'Initializing...';
+            }
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+        
+        // Validation for number of speakers
+        numSpeakers.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (isNaN(value) || value < 1) {
+                this.value = 1;
+            } else if (value > 10) {
+                this.value = 10;
+            }
+        });
+    </script>
+</body>
+</html> 

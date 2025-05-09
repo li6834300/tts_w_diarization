@@ -1,0 +1,5 @@
+whisperx
+pyannote.audio
+pydub
+huggingface_hub
+accelerate 
